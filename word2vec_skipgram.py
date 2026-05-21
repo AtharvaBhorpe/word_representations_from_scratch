@@ -97,7 +97,7 @@ def _(Counter):
     vocab_size = len(vocab)
     print(f"Vocabulary size: {vocab_size}")
     print(f"Vocabulary: {vocab}")
-    return idx_to_word, vocab, vocab_size, word_to_idx
+    return idx_to_word, tokenized_corpus, vocab, vocab_size, word_to_idx
 
 
 @app.cell(hide_code=True)
@@ -109,33 +109,31 @@ def _(mo):
     return
 
 
-app._unparsable_cell(
-    """
+@app.cell
+def _(idx_to_word, tokenized_corpus, word_to_idx):
     def create_skipgram_pairs(tokenized_corpus, word_to_idx, window_size=2):
-        \"\"\"
+        """
         Create (center_word, context_word) pairs for Skip-gram training.
 
         For each word in each sentence, look at 'window_size' words to the
         left and right as context.
-        \"\"\"
+        """
         pairs = []
         for sentence in tokenized_corpus:
             for i, center_word in enumerate(sentence):
                 # Look at window_size words in each direction
                 for j in range(max(0, i - window_size), min(len(sentence), i + window_size + 1)):
                     if i != j:  # Skip the center word itself
-                         context_word = sentence[j]
+                        context_word = sentence[j]
                         pairs.append((word_to_idx[center_word], word_to_idx[context_word]))
         return pairs
 
     pairs = create_skipgram_pairs(tokenized_corpus, word_to_idx, window_size=2)
-    print(f\"Total training pairs: {len(pairs)}\")
-    print(f\"\\nFirst 5 pairs:\")
+    print(f"Total training pairs: {len(pairs)}")
+    print(f"\nFirst 5 pairs:")
     for center_idx, context_idx in pairs[:5]:
-        print(f\"Center: '{idx_to_word[center_idx]}' ->  Context: '{idx_to_word[context_idx]}'\")
-    """,
-    name="_"
-)
+        print(f"Center: '{idx_to_word[center_idx]}' ->  Context: '{idx_to_word[context_idx]}'")
+    return (pairs,)
 
 
 @app.cell
@@ -347,7 +345,7 @@ def _(model, np, word_to_idx):
     # Find the embedding for "bank"
     bank_idx = word_to_idx["bank"]
     bank_embedding = model.get_embedding(bank_idx)
-    
+
     def _():  # Required to wrap this cell inside a function to reuse the variable names like "word"
         print("=== Nearest neighbors to 'bank' ===\n")
         similarities = []

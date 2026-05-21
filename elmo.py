@@ -251,8 +251,8 @@ def _(np, torch):
             ctx1 = model(ids1)  # shape: (1, seq_len, hidden_dim)
             ctx2 = model(ids2)
 
-        repr1 = ctx1[0, idx1, :]  # extract at idx1. shape: (hidden_dim,)
-        repr2 = ctx2[0, idx2, :]  # extract at idx2. shape: (hidden_dim,)
+        repr1 = ctx1[0, idx1, :].numpy()  # extract at idx1. shape: (hidden_dim,)
+        repr2 = ctx2[0, idx2, :].numpy()  # extract at idx2. shape: (hidden_dim,)
 
         similarity = np.dot(repr1, repr2) / (np.linalg.norm(repr1) * np.linalg.norm(repr2))  # cosine similarity
 
